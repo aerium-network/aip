@@ -1,0 +1,29 @@
+---
+layout: default
+title: Home
+statuses: ["Final"]
+---
+
+<h1 class="page-heading">AIPs</h1>
+<p>
+  {{ site.description }}
+</p>
+
+<p>
+The primary goal of a AIP is to encourage the development team to write down ideas before implementation and
+invite the community to contribute more efficiently.
+It also helps to brainstorm, review, and discuss changes and potential issues before
+they can impact the production environment.
+</p>
+
+<h2>Contributing</h2>
+<p>To get started, please review <a href="AIPs/aip-1">AIP-1</a>.
+  Next, clone the repository and create your own AIP using the provided
+  <a href="https://github.com/aerium-network/aip/blob/main/aip-template.md?plain=1">template</a>.
+  Once your AIP is ready, submit a Pull Request to the
+  <a href="https://github.com/aerium-network/aip">Aerium AIP repository</a>.
+</p>
+
+<hr>
+
+{% include aiptable.html aips=site.pages %}

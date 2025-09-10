@@ -1,0 +1,126 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  save-pr:
+    name: Save PR Number
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Save PR number
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+          MERGE_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p ./pr
+          echo $PR_NUMBER > ./pr/pr_number
+          echo $PR_SHA > ./pr/pr_sha
+          echo $MERGE_SHA > ./pr/merge_sha
+
+      - name: Upload PR Number
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr_number
+          path: pr/
+
+  html-proofer:
+    name: HTMLProofer
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout AIP Repository
+        uses: actions/checkout@v4
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Build Website
+        run: |
+          bundle exec jekyll doctor
+          bundle exec jekyll build
+
+      # - name: HTML5Validator
+      #   uses: Cyb3r-Jak3/html5validator-action@v7.2.0
+      #   with:
+      #     root: _site
+
+      - name: HTML Proofer
+        run: bundle exec htmlproofer --swap-urls 'https\://aip.aerium.dev:' --ignore-status-codes "999,429,403,0" --ignore-urls "/github.com/" ./_site
+
+      - name: DNS Validator
+        run: bundle exec github-pages
+
+  link-check:
+    name: Link Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout AIP Repository
+        uses: actions/checkout@v4
+
+      - name: Link Checker
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          config-file: config/mlc_config.json
+          use-quiet-mode: no
+          use-verbose-mode: yes
+          check-modified-files-only: yes
+          base-branch: main
+
+  code-spell:
+    name: CodeSpell
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout AIP Repository
+        uses: actions/checkout@v4
+
+      - name: Get Changed Files
+        id: changed
+        continue-on-error: true
+        run: |
+          echo "CHANGED_FILES<<EOF" >> $GITHUB_ENV
+          gh pr diff ${{ github.event.number }} --name-only | sed -e 's|$|,|' | xargs -i echo "{}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run CodeSpell
+        uses: codespell-project/actions-codespell@v2
+        if: steps.changed.outcome == 'success'
+        with:
+          check_filenames: true
+          ignore_words_file: config/.codespell-whitelist
+          path: ${{ env.CHANGED_FILES }}
+          skip: .git,Gemfile.lock,**/*.png,**/*.gif,**/*.jpg,**/*.svg,.codespell-whitelist,vendor,_site,_config.yml,style.css
+
+
+  markdown-lint:
+    name: Lining Markdown files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+
+      - name: Install mdl
+        run: gem install mdl
+
+      - name: Linting markdowns
+        run: mdl --style=./config/.mdlrc.rb ./AIPs

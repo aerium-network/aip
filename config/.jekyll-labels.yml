@@ -1,0 +1,22 @@
+#### PIP Type / Category / Status ####
+
+# Type
+t-standard: this?.new?.type == "Standards Track"
+t-informational: this?.new?.type == "Informational"
+t-process: this?.new?.type == "Process"
+
+# Categories
+c-core: this?.new?.category == "Core"
+c-network: this?.new?.category == "Network"
+c-interface: this?.new?.category == "Interface"
+c-wallet: this?.new?.category == "Wallet"
+
+# Status
+s-draft: this?.new?.status == "Draft"
+s-deferred: this?.new?.status == "Deferred"
+s-accepted: this?.new?.status == "Accepted"
+s-rejected: this?.new?.status == "Rejected"
+s-withdrawn: this?.new?.status == "Withdrawn"
+s-final: this?.new?.status == "Final"
+s-replaced: this?.new?.status == "Replaced"
+s-Active: this?.new?.status == "Active"

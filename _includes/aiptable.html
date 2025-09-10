@@ -1,0 +1,27 @@
+{% assign statuses = page.statuses | default: site.data.statuses %}
+
+{% for status in statuses %}
+  {% assign aips = include.aips | where: "status", status | sort: "aip" | reverse %}
+  {% assign count = aips | size %}
+  {% if count > 0 %}
+    <h2 id="{{ status | slugify }}">{{ status }}</h2>
+    <table class="aiptable ">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th style="width:50%">Title</th>
+          <th>Category</th>
+          <th>Author</th>
+        </tr>
+      </thead>
+      {% for page in aips %}
+        <tr>
+          <td><a href="{{ page.url | relative_url }}">{{ page.aip | xml_escape }}</a></td>
+          <td>{{ page.title | xml_escape }}</td>
+          <td>{{ page.category | default: "-" }}</td>
+          <td>{% include authorlist.html authors=page.author %}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+{% endfor %}
