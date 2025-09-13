@@ -1,6 +1,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Favicons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ '/assets/favicons/apple-touch-icon.png' | relative_url }}">
+  <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicons/favicon.svg' | relative_url }}">
+  <link rel="alternate icon" type="image/x-icon" href="{{ '/assets/favicons/favicon.ico' | relative_url }}">
+  <link rel="manifest" href="{{ '/assets/favicons/site.webmanifest' | relative_url }}">
+
   {% if page.layout == "aip" %}
     <title>AIP-{{ page.aip }}: {{ page.title | escape }}</title>
     <meta property="og:title" content="AIP-{{ page.aip }}: {{ page.title | escape }}" />
@@ -9,11 +15,6 @@
     <meta name="twitter:description" content="{{page.description | escape }}" />
   {% else %}
 
-  <!-- Favicons -->
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ '/assets/favicons/apple-touch-icon.png' | relative_url }}">
-  <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicons/favicon.svg' | relative_url }}">
-  <link rel="alternate icon" type="image/x-icon" href="{{ '/assets/favicons/favicon.ico' | relative_url }}">
-  <link rel="manifest" href="{{ '/assets/favicons/site.webmanifest' | relative_url }}">
   <meta name="msapplication-TileColor" content="#da532c">
   <meta name="theme-color" content="#ffffff">
 
