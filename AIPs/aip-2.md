@@ -35,8 +35,8 @@ system based on actual contribution.
 - **Availability Score**:
    - A value between $0.0$ and $1.0$ representing the validator's recent
     performance and uptime.
-   - Scores below $0.666667$ result in temporary exclusion from the committee
-    (no rewards).
+   - Scores below $\tau = \frac{2}{3}\;(\approx 0.666667)$ result in temporary
+     exclusion from the committee (no rewards).
    - Scores $≥ 0.666667$ are eligible for scaled rewards.
 
 - **Reward Scaling Formula**:
@@ -56,12 +56,12 @@ system based on actual contribution.
 - **Examples** (with $base\\_reward = 0.7$, $α = 0.5$):
    - $score = 1.0$ → $reward = 0.7 AUM$
    - $score = 0.98$ → $reward = 0.693 AUM$
-   - $score = 0.6$ → $reward = 0.56 AUM$
-   - $score = 0.0$ → $reward = 0.35 AUM$
+   - $score = 0.6$ (below $\tau$) → excluded → $reward = 0$
+   - $score = 0.0$ (below $\tau$) → excluded → $reward = 0$
 
 This approach ensures validators with excellent availability maximize their
-rewards, while poorly performing validators earn less, yet retain a baseline
-incentive.
+rewards, while poorly performing validators earn less; validators below the
+threshold receive no rewards while temporarily excluded.
 
 ## Backwards Compatibility
 
@@ -72,9 +72,9 @@ remain compatible, with only the distribution formula adjusted.
 
 - Validator $score = 1.0$, $reward = 0.7$
 - Validator $score = 0.98$, $reward ≈ 0.693$
-- Validator $score = 0.6$, $reward = 0.56$
-- Validator $score = 0.0$, $reward = 0.35$
-- Validator $score < 0.6$ and excluded from committee → $reward = 0$
+- Validator $score = 0.6$ (below $\tau$), $reward = 0$
+- Validator $score = 0.0$ (below $\tau$), $reward = 0$
+- Validator $score < 0.666667$ and excluded from committee → $reward = 0$
 
 ## Security Considerations
 
