@@ -40,20 +40,20 @@ system based on actual contribution.
    - Scores $≥ 0.666667$ are eligible for scaled rewards.
 
 - **Reward Scaling Formula**:
-   - Let $base\_reward$ be the validator's share of the block reward (e.g., if
+   - Let $base\\_reward$ be the validator's share of the block reward (e.g., if
     the protocol allocates 70% of each block reward to validators and 30% to
-    the foundation, then $base\_reward$ = 0.7 AUM).
+    the foundation, then $base\\_reward$ = 0.7 AUM).
    - The adjusted reward is calculated as:
 
       $$
-      reward = base\_reward × (α + (1 − α) × score)
+      reward = base\\_reward × (α + (1 − α) × score)
       $$
 
    - Where:
       - $α$ = fixed proportion (e.g., 0.5) ensuring a minimum reward floor.
       - $score$ = availability score of the validator (0.0 ≤ score ≤ 1.0).
 
-- **Examples** (with $base\_reward = 0.7$, $α = 0.5$):
+- **Examples** (with $base\\_reward = 0.7$, $α = 0.5$):
    - $score = 1.0$ → $reward = 0.7 AUM$
    - $score = 0.98$ → $reward = 0.693 AUM$
    - $score = 0.6$ → $reward = 0.56 AUM$
