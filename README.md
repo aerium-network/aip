@@ -49,7 +49,7 @@ gem install mdl
 Then you can lint your Markdown files with the following command:
 
 ```sh
-mdl --style=.mdlrc.rb ./AIPs
+mdl --style=config/.mdlrc.rb ./AIPs
 ```
 
 This command will check all documents in the `AIPs` folder for any linting issues and output them in the terminal.
