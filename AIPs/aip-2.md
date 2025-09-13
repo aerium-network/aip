@@ -33,11 +33,10 @@ system based on actual contribution.
 ## Specification
 
 - **Availability Score**:
-   - A value between $0.0$ and $1.0$ representing the validator's recent
-    performance and uptime.
-   - Scores below $\tau = \frac{2}{3}\;(\approx 0.666667)$ result in temporary
-     exclusion from the committee (no rewards).
-   - Scores $≥ 0.666667$ are eligible for scaled rewards.
+   - A value between $0.0$ and $1.0$ representing the validator's recent performance and uptime.
+   - Define $\\tau = \\tfrac{2}{3} \\approx 0.666667$.
+   - Scores $< \\tau$ → temporary exclusion from the committee (no rewards).
+   - Scores $\\ge \\tau$ → eligible for scaled rewards.
 
 - **Reward Scaling Formula**:
    - Let $base\\_reward$ be the validator's share of the block reward (e.g., if
@@ -54,10 +53,11 @@ system based on actual contribution.
       - $score$ = availability score of the validator (0.0 ≤ score ≤ 1.0).
 
 - **Examples** (with $base\\_reward = 0.7$, $α = 0.5$):
-   - $score = 1.0$ → $reward = 0.7 AUM$
-   - $score = 0.98$ → $reward = 0.693 AUM$
-   - $score = 0.6$ (below $\tau$) → excluded → $reward = 0$
-   - $score = 0.0$ (below $\tau$) → excluded → $reward = 0$
+   - $score = 1.0$ → $reward = 0.7\\,\\mathrm{AUM}$
+   - $score = 0.98$ → $reward = 0.693\\,\\mathrm{AUM}$
+   - $score = 0.666667$ ($\\approx \\tau$) → $reward \\approx 0.5833\\,\\mathrm{AUM}$
+   - $score = 0.6$ (below $\\tau$) → excluded → $reward = 0$
+   - $score = 0.0$ (below $\\tau$) → excluded → $reward = 0$
 
 This approach ensures validators with excellent availability maximize their
 rewards, while poorly performing validators earn less; validators below the
