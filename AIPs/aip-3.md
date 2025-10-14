@@ -131,6 +131,16 @@ All IP Registry operations share the following metadata fields for selective pri
 - `*1`: Optional metadata field - can be omitted for privacy control
 - `*2`: Optional public link field - can be omitted to maintain content location privacy
 
+#### On‑chain Optional Metadata Layout (372 bytes)
+
+- Fixed slots in order: Title (100 bytes), Size (8 bytes, uint64 big‑endian),
+  ContentType (64 bytes), PublicLink (200 bytes).
+- If a field is omitted, its entire slot MUST be all zero bytes.
+- Strings: UTF‑8, NFC normalized, left‑justified, NUL (0x00) padded to slot size.
+  Truncate at the last complete code point that fits.
+- Size: uint64 big‑endian.
+- The total block is always present (372 bytes); omission is signaled by zeroed slots.
+
 ### Supported URL Formats
 
 The `PublicLink` field supports both centralized and decentralized storage:
@@ -293,6 +303,12 @@ infeasible without detection.
 - **Bitcoin Compatibility**: Enables integration with existing Bitcoin/Ethereum infrastructure
 - **Security Level**: 128-bit equivalent security with proper implementation
 - **Malleability Concerns**: Requires canonical signature encoding to prevent transaction malleability
+
+#### Signature Encoding Requirements
+
+- Ed25519: fixed 64‑byte signature.
+- secp256k1: fixed 64‑byte compact (R∥S), low‑S normalized; DER is NOT permitted in this payload.
+- The signature scheme MUST be unambiguously derivable from the transaction envelope.
 
 ### Content-Related Attacks
 
