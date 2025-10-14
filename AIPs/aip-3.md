@@ -27,7 +27,7 @@ similar to distributed version control systems.
 
 The implementation leverages cryptographic signatures `(Ed25519/Secp256k1)` to
 establish proof of ownership and authenticity, with transaction sizes optimized
-to range from `153 bytes` for minimal registrations to `590 bytes` for full
+to range from `121 bytes` for minimal registrations to `558 bytes` for full
 transfers including complete metadata. Unlike existing NFT-based solutions that
 require smart contract overhead, this native approach provides superior
 performance, lower costs, and enhanced privacy through selective metadata
@@ -298,7 +298,7 @@ infeasible without detection.
 
 - **Description**: Attacker attempts to create different content with identical
   BLAKE2b hash
-- **Probability**: `~2^-256` (computationally infeasible)
+- **Probability**: `2^128` (computationally infeasible)
 - **Impact**: Could enable content substitution without detection
 - **Mitigation**: BLAKE2b-256 provides sufficient collision resistance; monitor
   for hash function advances
