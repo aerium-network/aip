@@ -109,9 +109,9 @@ existing architecture patterns.
 
 | Operation | Fixed Fields | Optional Metadata | Total Range |
 |-----------|-------------|-------------------|-------------|
-| **IP Register** | 121 bytes | 0-372 bytes | 121-493 bytes |
-| **IP Update** | 153 bytes | 0-372 bytes | 153-525 bytes |
-| **IP Transfer** | 186 bytes | 0-372 bytes | 186-558 bytes |
+| **IP Register** | 153 bytes | 0-372 bytes | 153-525 bytes |
+| **IP Update** | 185 bytes | 0-372 bytes | 185-557 bytes |
+| **IP Transfer** | 218 bytes | 0-372 bytes | 218-590 bytes |
 
 ## Payload Structures
 
