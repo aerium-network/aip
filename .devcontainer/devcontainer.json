@@ -6,13 +6,39 @@
 	"image": "mcr.microsoft.com/devcontainers/ruby:1-3.2-bullseye",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+	"features": {
+		// Ensure common utils and sudo are available, and set the dev user explicitly
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"installZsh": "true",
+			"username": "vscode",
+			"userUid": "1000",
+			"userGid": "1000",
+			"upgradePackages": "true"
+		}
+	},
+
+	// Ensure the container user matches your host user UID/GID on Linux to avoid bind mount permission issues
+	"updateRemoteUserUID": true,
+
+	// Use the non-root user with sudo for safety while retaining full access
+	"remoteUser": "vscode",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "ruby --version && gem install bundler && bundle install"
+	"postCreateCommand": [
+		"bash",
+		"-lc",
+		"set -euo pipefail; ruby --version; sudo chown -R $(id -u):$(id -g) ${containerWorkspaceFolder}; gem install bundler; bundle install"
+	]
+	,
+	// Also fix ownership on every start (e.g., after container rebuilds or mount changes)
+	"postStartCommand": [
+		"bash",
+		"-lc",
+		"sudo chown -R $(id -u):$(id -g) ${containerWorkspaceFolder} || true"
+	]
 
 	// Configure tool-specific properties.
 	// "customizations": {},
