@@ -8,7 +8,7 @@ author: Aerium Team <info@aerium.network>
 status: Draft
 type: Standard
 category: Core
-discussion-no:
+discussion-no: 5
 created: 2025-10-14
 ---
 
