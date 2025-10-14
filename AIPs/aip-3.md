@@ -70,7 +70,7 @@ like Git, providing linear versioning with clear ownership transitions. This
 familiar paradigm reduces complexity for both implementers and users while
 ensuring efficient validation by network participants.
 
-![Linear chain Workflow](../assets/aip-3/chain.png)
+![Linear chain Workflow](../assets/aip-3/chain.jpg)
 
 ## Specification
 
@@ -95,27 +95,67 @@ Currently, transactions in Aerium support the following payload types:
 
 #### New IP Registry Payload Types
 
-This AIP proposes the addition of three new payload types for intellectual property management:
+This AIP proposes the addition of four new payload types for intellectual property management:
 
-- **IP Register Payload** (PayloadType: `7`) - Initial intellectual property registration
+- **IP Mint Payload** (PayloadType: `7`) - Initial intellectual property registration
 - **IP Update Payload** (PayloadType: `8`) - Content or metadata modification while preserving ownership
 - **IP Transfer Payload** (PayloadType: `9`) - Ownership transfer to a new address
+- **IP Burn Payload** (PayloadType: `10`) - Permanent destruction of IP ownership
 
 This approach provides **zero ambiguity**, **compile-time type safety**, and
 **optimal payload sizes** while maintaining **perfect alignment** with Aerium's
 existing architecture patterns.
 
+### Content ID System
+
+The IP Registry introduces a **Content ID** system that provides stable, permanent identification
+for intellectual property assets across their entire lifecycle.
+
+**Content ID Generation**:
+
+$$
+ContentID = BLAKE2b-256(InitialContentHash || Owner || BlockNumber)
+$$
+
+Where:
+
+- `InitialContentHash`: BLAKE2b-256 hash of original file content
+- `Owner`: Address of initial owner (21 bytes)
+- `BlockNumber`: Block number of mint transaction (lock time) (8 bytes, big-endian)
+
+**Content ID Properties**:
+
+- **Permanent**: Never changes throughout IP lifecycle
+- **Unique**: Cryptographically guaranteed uniqueness
+- **Deterministic**: Can be reproduced given mint transaction data
+
+### Version Control Semantics
+
+The IP Registry implements **semantic version control** where version numbers have
+clear, specific meaning:
+
+**Version Increment Rules**:
+
+- **MINT**: Always version 0 (initial registration)
+- **UPDATE**: Version increments by 1 (content or metadata changed)
+- **TRANSFER**: **Version unchanged** (ownership transfer only)
+- **BURN**: Version increments by 1 (final state change)
+
+**Rationale**: This approach follows industry standards where version numbers reflect
+content changes, not ownership changes. Similar to Git commits (content changes)
+vs. repository ownership transfers (no new commit), or patent numbers (constant)
+vs. patent ownership (transferable).
+
 ### Payload Size Analysis
 
 | Operation | Fixed Fields | Optional Metadata | Total Range |
 |-----------|-------------|-------------------|-------------|
-| **IP Register** | 153 bytes | 0-372 bytes | 153-525 bytes |
-| **IP Update** | 185 bytes | 0-372 bytes | 185-557 bytes |
-| **IP Transfer** | 218 bytes | 0-372 bytes | 218-590 bytes |
+| **IP Mint** | 185 bytes | 0-372 bytes | 185-557 bytes |
+| **IP Update** | 217 bytes | 0-372 bytes | 217-589 bytes |
+| **IP Transfer** | 250 bytes | 0-372 bytes | 250-622 bytes |
+| **IP Burn** | 221 bytes | 0-100 bytes | 221-321 bytes |
 
 ## Payload Structures
-
-### Common Fields
 
 All IP Registry operations share the following metadata fields for selective privacy control:
 
@@ -131,7 +171,7 @@ All IP Registry operations share the following metadata fields for selective pri
 - `*1`: Optional metadata field - can be omitted for privacy control
 - `*2`: Optional public link field - can be omitted to maintain content location privacy
 
-#### On‑chain Optional Metadata Layout (372 bytes)
+### On‑chain Optional Metadata Layout (372 bytes)
 
 - Fixed slots in order: Title (100 bytes), Size (8 bytes, uint64 big‑endian),
   ContentType (64 bytes), PublicLink (200 bytes).
@@ -150,39 +190,44 @@ The `PublicLink` field supports both centralized and decentralized storage:
 - **IPFS Custom Gateway**: `https://gateway.pinata.cloud/ipfs/QmXXXXX...` (80+ characters)
 - **Standard HTTP/HTTPS**: Custom URLs for traditional hosting
 
-### 1. IP Register Payload (PayloadType: `7`)
+### 1. IP Mint Payload (PayloadType: `7`)
 
-**Purpose**: Initial registration of intellectual property
+**Purpose**: Initial registration of intellectual property with permanent Content ID assignment
 
 **Payload Structure**:
 
 | Field | Type | Size | Description | Required |
 |-------|------|------|-------------|----------|
-| Owner | `Address` | 21 Bytes | Current owner address | ✅ |
+| ContentID | `Hash` | 32 Bytes | Permanent IP identifier (generated deterministically) | ✅ |
+| Owner | `Address` | 21 Bytes | Initial owner address | ✅ |
 | ContentHash | `Hash` | 32 Bytes | BLAKE2b-256 hash of file content | ✅ |
 | MetadataHash | `Hash` | 32 Bytes | BLAKE2b-256 hash of serialized metadata | ✅ |
 | Version | `uint32` | 4 Bytes | Sequential version number (must be 1) | ✅ |
-| Signature | `Bytes` | 64 Bytes | Ed25519/ECDSA signature of computed `ProofHash` | ✅ |
-| *Optional Metadata* | *Various* | *372 Bytes* | `Title`, `Size`, `ContentType`, `PublicLink` | *1, *2 |
+| Signature | `Bytes` | 64 Bytes | Ed25519/ECDSA signature of computed ProofHash | ✅ |
+| *Optional Metadata* | *Various* | *372 Bytes* | Title, Size, ContentType, PublicLink | *1, *2 |
 
 **Validation Rules:**
 
 - `Version` MUST equal `1`
-- `ContentHash` MUST be unique (not previously registered)
+- `ContentID` MUST be unique (not previously registered)
+- `ContentID` MUST be calculated correctly from initial content and owner
 - `Owner` becomes initial IP owner
 
 **ProofHash Calculation**:
 
-$$ProofHash_{REGISTER} = H(ContentHash \parallel MetadataHash \parallel Version)$$
+$$
+ProofHash_{MINT} = H(ContentID \parallel ContentHash \parallel MetadataHash \parallel Version)
+$$
 
 ### 2. IP Update Payload (PayloadType: `8`)
 
-**Purpose**: Content or metadata modification while preserving ownership
+**Purpose**: Content or metadata modification while preserving ownership and Content ID
 
 **Payload Structure**:
 
 | Field | Type | Size | Description | Required |
 |-------|------|------|-------------|----------|
+| ContentID | `Hash` | 32 Bytes | Permanent IP identifier (unchanged from mint) | ✅ |
 | Owner | `Address` | 21 Bytes | Current owner address | ✅ |
 | ContentHash | `Hash` | 32 Bytes | BLAKE2b-256 hash of file content | ✅ |
 | MetadataHash | `Hash` | 32 Bytes | BLAKE2b-256 hash of serialized metadata | ✅ |
@@ -193,27 +238,32 @@ $$ProofHash_{REGISTER} = H(ContentHash \parallel MetadataHash \parallel Version)
 
 **Validation Rules:**
 
+- `ContentID` MUST match existing IP state
 - `Version` MUST equal `CurrentState.Version + 1`
 - `Owner` MUST equal current owner in state
 - `PreviousHash` MUST equal `CurrentState.LastTransactionHash`
 - `ContentHash` MAY change (content update) or remain same (metadata-only update)
+- IP MUST NOT be in BURNED status
 
 **ProofHash Calculation**:
 
-$$ProofHash_{UPDATE} = H(ContentHash \parallel MetadataHash \parallel Version \parallel PreviousHash)$$
+$$
+ProofHash_{UPDATE} = H(ContentID \parallel ContentHash \parallel MetadataHash \parallel Version \parallel PreviousHash)
+$$
 
 ### 3. IP Transfer Payload (PayloadType: `9`)
 
-**Purpose**: Ownership transfer to a new address
+**Purpose**: Ownership transfer to a new address while maintaining Content ID and version
 
 **Payload Structure**:
 
 | Field | Type | Size | Description | Required |
 |-------|------|------|-------------|----------|
+| ContentID | `Hash` | 32 Bytes | Permanent IP identifier (unchanged from mint) | ✅ |
 | Owner | `Address` | 21 Bytes | Current owner address | ✅ |
 | ContentHash | `Hash` | 32 Bytes | BLAKE2b-256 hash of file content | ✅ |
 | MetadataHash | `Hash` | 32 Bytes | BLAKE2b-256 hash of serialized metadata | ✅ |
-| Version | `uint32` | 4 Bytes | Sequential version number (previous + 1) | ✅ |
+| Version | `uint32` | 4 Bytes | **Current version number (unchanged)** | ✅ |
 | PreviousHash | `Hash` | 32 Bytes | Hash of previous IP transaction | ✅ |
 | NewOwnerKey | `Bytes` | 33 Bytes | Compressed public key of new owner | ✅ |
 | Signature | `Bytes` | 64 Bytes | Ed25519/ECDSA signature of computed ProofHash | ✅ |
@@ -221,15 +271,69 @@ $$ProofHash_{UPDATE} = H(ContentHash \parallel MetadataHash \parallel Version \p
 
 **Validation Rules:**
 
-- `Version` MUST equal `CurrentState.Version + 1`
+- `ContentID` MUST match existing IP state
+- `Version` MUST equal `CurrentState.Version` (**NO increment**)
 - `Owner` MUST equal current owner in state
 - `PreviousHash` MUST equal `CurrentState.LastTransactionHash`
 - `NewOwnerKey` MUST be valid compressed public key (33 bytes)
 - New owner address derived from `NewOwnerKey`
+- IP MUST NOT be in BURNED status
 
 **ProofHash Calculation**:
 
-$$ProofHash_{TRANSFER} = H(ContentHash \parallel MetadataHash \parallel Version \parallel PreviousHash \parallel NewOwnerKey)$$
+$$
+ProofHash_{TRANSFER} = H(ContentID \parallel ContentHash \parallel MetadataHash
+\parallel Version \parallel PreviousHash \parallel NewOwnerKey)
+$$
+
+**Transfer Semantics**: The transfer operation changes ownership but preserves the content version.
+This ensures that version numbers have semantic meaning related to content changes, not ownership changes.
+The new owner receives the IP at its current content version.
+
+### 4. IP Burn Payload (PayloadType: `10`)
+
+**Purpose**: Permanent destruction of IP ownership, preventing all future operations
+
+**Payload Structure**:
+
+| Field | Type | Size | Description | Required |
+|-------|------|------|-------------|----------|
+| ContentID | `Hash` | 32 Bytes | Permanent IP identifier | ✅ |
+| Version | `uint32` | 4 Bytes | Sequential version number (previous + 1) | ✅ |
+| PreviousHash | `Hash` | 32 Bytes | Hash of previous IP transaction | ✅ |
+| BurnReason | `string` | 100 Bytes | Optional reason for destruction (UTF-8) | *3 |
+| Signature | `Bytes` | 64 Bytes | Ed25519/ECDSA signature of computed ProofHash | ✅ |
+
+**Privacy Notes**:
+
+- `*3`: Optional burn reason - can be omitted or zeroed for privacy
+
+**Validation Rules**:
+
+- `ContentID` MUST match existing IP state
+- `Version` MUST equal `CurrentState.Version + 1`
+- `Owner` MUST equal current owner in state
+- `PreviousHash` MUST equal `CurrentState.LastTransactionHash`
+- IP MUST NOT already be in BURNED status
+- Only current owner can burn IP
+
+**Effects of Burn Operation**:
+
+- No future Update, Transfer, or Burn operations allowed
+- IP becomes permanently frozen and unusable
+- All historical data remains accessible for provenance
+
+**ProofHash Calculation**:
+
+$$ProofHash_{BURN} = H(ContentID \parallel Version \parallel PreviousHash \parallel BurnReason)$$
+
+**Use Cases for IP Burn**:
+
+- **Copyright Expiration**: When legal protection period ends
+- **Voluntary Relinquishment**: Owner chooses to release ownership
+- **Legal Compliance**: Court orders or regulatory requirements
+- **Asset Retirement**: Business decision to retire digital assets
+- **Privacy Protection**: Permanent removal from active circulation
 
 ## Cryptographic Specifications
 
