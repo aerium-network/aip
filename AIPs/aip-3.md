@@ -268,8 +268,10 @@ specialized security analysis and protection mechanisms.
   finding content that matches a given hash
 - **Performance**: High-speed hashing (~1 GB/s) minimizes computational overhead
   while maintaining security
-- **Quantum Resistance**: Post-quantum secure against known quantum algorithms
-  (Grover's algorithm reduces security to `2^128`, still adequate)
+- **Quantum Resistance**: Grover's algorithm reduces preimage security to ~`2^128`
+  operations and collision security to approximately `2^85` (via quantum collision-finding
+  attacks). While not post-quantum secure, these reduced security levels remain substantial
+  and adequate for the IP Registry's threat model in the near to medium term
 
 **Hash Chain Integrity:**
 
@@ -298,7 +300,8 @@ infeasible without detection.
 
 - **Description**: Attacker attempts to create different content with identical
   BLAKE2b hash
-- **Probability**: `2^128` (computationally infeasible)
+- **Probability**: Success requires ~`2^128` operations (collision probability
+  per random attempt is approximately `2^-128`)
 - **Impact**: Could enable content substitution without detection
 - **Mitigation**: BLAKE2b-256 provides sufficient collision resistance; monitor
   for hash function advances
