@@ -208,7 +208,7 @@ The `PublicLink` field supports both centralized and decentralized storage:
 
 **Validation Rules:**
 
-- `Version` MUST equal `1`
+- `Version` MUST equal `0`
 - `ContentID` MUST be unique (not previously registered)
 - `ContentID` MUST be calculated correctly from initial content and owner
 - `Owner` becomes initial IP owner
