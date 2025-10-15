@@ -18,14 +18,14 @@ This proposal introduces a native Layer-1 transaction type for the Aerium
 blockchain that enables decentralized intellectual property registration,
 ownership tracking, and provenance management without relying on smart
 contracts. The system implements a privacy-preserving hash-based proof mechanism
-using BLAKE2b cryptographic functions to ensure data integrity while maintaining
-confidentiality of asset content. The proposed IP Registry system
+using BLAKE2b [^2] cryptographic functions to ensure data integrity while maintaining
+confidentiality of asset content. The proposed "DAS" (Digital Asset System) system
 supports comprehensive metadata management with optional fields including title,
 content type, public links, and file size, while maintaining a mandatory version
 control system that creates an immutable chain of ownership and modifications
 similar to distributed version control systems.
 
-The implementation leverages cryptographic signatures `(Ed25519/Secp256k1)` to
+The implementation leverages cryptographic signatures `(Ed25519/Secp256k1)` [^3] to
 establish proof of ownership and authenticity, with transaction sizes optimized
 to range from `121 bytes` for minimal registrations to `558 bytes` for full
 transfers including complete metadata. Unlike existing NFT-based solutions that
@@ -93,7 +93,7 @@ Currently, transactions in Aerium support the following payload types:
 - **Withdraw Payload** (PayloadType: `5`) - Reward withdrawal operations
 - **Batch Transfer Payload** (PayloadType: `6`) - Multiple transfers in single transaction
 
-#### New IP Registry Payload Types
+#### New "DAS" (Digital Asset System) Payload Types
 
 This AIP proposes the addition of four new payload types for intellectual property management:
 
@@ -108,7 +108,7 @@ existing architecture patterns.
 
 ### Content ID System
 
-The IP Registry introduces a **Content ID** system that provides stable, permanent identification
+The "DAS" (Digital Asset System) introduces a **Content ID** system that provides stable, permanent identification
 for intellectual property assets across their entire lifecycle.
 
 **Content ID Generation**:
@@ -121,7 +121,7 @@ Where:
 
 - `InitialContentHash`: BLAKE2b-256 hash of original file content
 - `Owner`: Address of initial owner (21 bytes)
-- `BlockNumber`: Block number of mint transaction (lock time) (8 bytes, big-endian)
+- `BlockNumber`: Block number of mint transaction (lock time, 4 bytes, big-endian)
 
 **Content ID Properties**:
 
@@ -131,15 +131,17 @@ Where:
 
 ### Version Control Semantics
 
-The IP Registry implements **semantic version control** where version numbers have
+The "DAS" (Digital Asset System) implements **semantic version control** where version numbers have
 clear, specific meaning:
 
 **Version Increment Rules**:
 
-- **MINT**: Always version 0 (initial registration)
-- **UPDATE**: Version increments by 1 (content or metadata changed)
-- **TRANSFER**: **Version unchanged** (ownership transfer only)
-- **BURN**: Version increments by 1 (final state change)
+| Action | Version Rule | Description |
+|---------|---------------|-------------|
+| Mint | = 0 | First registration |
+| Update | +1 | Content or metadata changed |
+| Transfer | = current | Ownership change only |
+| Burn | +1 | Final irreversible state |
 
 **Rationale**: This approach follows industry standards where version numbers reflect
 content changes, not ownership changes. Similar to Git commits (content changes)
@@ -152,12 +154,12 @@ vs. patent ownership (transferable).
 |-----------|-------------|-------------------|-------------|
 | **IP Mint** | 185 bytes | 0-372 bytes | 185-557 bytes |
 | **IP Update** | 217 bytes | 0-372 bytes | 217-589 bytes |
-| **IP Transfer** | 250 bytes | 0-372 bytes | 250-622 bytes |
+| **IP Transfer** | 240 bytes | 0-372 bytes | 240-622 bytes |
 | **IP Burn** | 221 bytes | 0-100 bytes | 221-321 bytes |
 
 ## Payload Structures
 
-All IP Registry operations share the following metadata fields for selective privacy control:
+All "DAS" (Digital Asset System) operations share the following metadata fields for selective privacy control:
 
 | Field | Type | Size | Description | Required |
 |-------|------|------|-------------|----------|
@@ -265,7 +267,7 @@ $$
 | MetadataHash | `Hash` | 32 Bytes | BLAKE2b-256 hash of serialized metadata | ✅ |
 | Version | `uint32` | 4 Bytes | **Current version number (unchanged)** | ✅ |
 | PreviousHash | `Hash` | 32 Bytes | Hash of previous IP transaction | ✅ |
-| NewOwnerKey | `Bytes` | 33 Bytes | Compressed public key of new owner | ✅ |
+| NewOwnerAddr | `Address` | 21 | New IP owner | ✅ |
 | Signature | `Bytes` | 64 Bytes | Ed25519/ECDSA signature of computed ProofHash | ✅ |
 | *Optional Metadata* | *Various* | *372 Bytes* | Title, Size, ContentType, PublicLink | *1, *2 |
 
@@ -275,15 +277,14 @@ $$
 - `Version` MUST equal `CurrentState.Version` (**NO increment**)
 - `Owner` MUST equal current owner in state
 - `PreviousHash` MUST equal `CurrentState.LastTransactionHash`
-- `NewOwnerKey` MUST be valid compressed public key (33 bytes)
-- New owner address derived from `NewOwnerKey`
+- `NewOwnerAddr` MUST be valid address (21 bytes)
 - IP MUST NOT be in BURNED status
 
 **ProofHash Calculation**:
 
 $$
 ProofHash_{TRANSFER} = H(ContentID \parallel ContentHash \parallel MetadataHash
-\parallel Version \parallel PreviousHash \parallel NewOwnerKey)
+\parallel Version \parallel PreviousHash \parallel NewOwnerAddr)
 $$
 
 **Transfer Semantics**: The transfer operation changes ownership but preserves the content version.
@@ -366,7 +367,7 @@ $$
 
 ## Security Considerations
 
-The IP Registry system introduces new attack surfaces and security
+The "DAS" (Digital Asset System) system introduces new attack surfaces and security
 considerations beyond standard cryptocurrency transactions. The unique
 requirements of intellectual property management—including content integrity,
 ownership verification, version control, and selective privacy—necessitate
@@ -534,6 +535,14 @@ infeasible without detection.
    - Standardized disclosure practices
    - Marketplace governance mechanisms
 
+## Use Cases
+
+- Digital art provenance and resale tracking
+- Software license lifecycle
+- Academic publication verification
+
 ## References
 
-[^1]: RFC 6838 [Media Type](https://datatracker.ietf.org/doc/html/rfc6838) Specifications and Registration Procedures
+[^1]: RFC 6838 — Media Type Specifications and Registration Procedures
+[^2]: BLAKE2 — [RFC 7693](https://datatracker.ietf.org/doc/html/rfc7693)
+[^3]: Ed25519 — [RFC 8032](https://datatracker.ietf.org/doc/html/rfc8032)
