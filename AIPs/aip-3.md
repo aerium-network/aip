@@ -300,6 +300,7 @@ The new owner receives the IP at its current content version.
 | Field | Type | Size | Description | Required |
 |-------|------|------|-------------|----------|
 | ContentID | `Hash` | 32 Bytes | Permanent IP identifier | ✅ |
+| Owner | `Address` | 21 Bytes | Current owner address | ✅ |
 | Version | `uint32` | 4 Bytes | Sequential version number (previous + 1) | ✅ |
 | PreviousHash | `Hash` | 32 Bytes | Hash of previous IP transaction | ✅ |
 | BurnReason | `string` | 100 Bytes | Optional reason for destruction (UTF-8) | *3 |
