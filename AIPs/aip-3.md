@@ -359,7 +359,7 @@ The `MetadataHash` ensures metadata integrity and supports selective disclosure:
 
 $$
 MetadataHash = \begin{cases}
-H(JSON(Metadata)) & \text{if } Metadata \neq \emptyset \\
+H(CBOR(Metadata)) & \text{if } Metadata \neq \emptyset \\
 0^{32} & \text{if } Metadata = \emptyset
 \end{cases}
 $$
