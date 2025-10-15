@@ -202,7 +202,7 @@ The `PublicLink` field supports both centralized and decentralized storage:
 | Owner | `Address` | 21 Bytes | Initial owner address | ✅ |
 | ContentHash | `Hash` | 32 Bytes | BLAKE2b-256 hash of file content | ✅ |
 | MetadataHash | `Hash` | 32 Bytes | BLAKE2b-256 hash of serialized metadata | ✅ |
-| Version | `uint32` | 4 Bytes | Sequential version number (must be 1) | ✅ |
+| Version | `uint32` | 4 Bytes | Sequential version number (must be 0) | ✅ |
 | Signature | `Bytes` | 64 Bytes | Ed25519/ECDSA signature of computed ProofHash | ✅ |
 | *Optional Metadata* | *Various* | *372 Bytes* | Title, Size, ContentType, PublicLink | *1, *2 |
 
@@ -382,10 +382,6 @@ specialized security analysis and protection mechanisms.
   finding content that matches a given hash
 - **Performance**: High-speed hashing (~1 GB/s) minimizes computational overhead
   while maintaining security
-- **Quantum Resistance**: Grover's algorithm reduces preimage security to ~`2^128`
-  operations and collision security to approximately `2^85` (via quantum collision-finding
-  attacks). While not post-quantum secure, these reduced security levels remain substantial
-  and adequate for the IP Registry's threat model in the near to medium term
 
 **Hash Chain Integrity:**
 
@@ -400,7 +396,6 @@ infeasible without detection.
 - **Key Security**: 128-bit equivalent security level against classical computers
 - **Signature Uniqueness**: Deterministic signatures prevent signature malleability attacks
 - **Side-Channel Resistance**: Constant-time implementation prevents timing attacks
-- **Quantum Vulnerability**: Vulnerable to Shor's algorithm; requires future upgrade to post-quantum schemes
 
 **ECDSA secp256k1 Compatibility:**
 
